@@ -1,6 +1,9 @@
 package tn.esprit.spring.msclasse4twin6;
 
 import org.springframework.stereotype.Service;
+import tn.esprit.spring.msclasse4twin6.dto.ClasseAvecMatieresDto;
+import tn.esprit.spring.msclasse4twin6.feign.MatiereClasseInfo;
+import tn.esprit.spring.msclasse4twin6.feign.MatiereFeignClient;
 
 import java.util.List;
 import java.util.Optional;
@@ -9,9 +12,11 @@ import java.util.Optional;
 public class ClasseService implements IClasseService {
 
     private final ClasseRepository repository;
+    private final MatiereFeignClient matiereFeignClient;
 
-    public ClasseService(ClasseRepository repository) {
+    public ClasseService(ClasseRepository repository, MatiereFeignClient matiereFeignClient) {
         this.repository = repository;
+        this.matiereFeignClient = matiereFeignClient;
     }
 
     @Override
@@ -42,5 +47,18 @@ public class ClasseService implements IClasseService {
     @Override
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+
+    @Override
+    public Optional<ClasseAvecMatieresDto> getClasseAvecMatieres(Long classeId) {
+        return repository.findById(classeId).map(classe -> {
+            List<MatiereClasseInfo> matieres = matiereFeignClient.getByClasseId(classeId);
+            ClasseAvecMatieresDto dto = new ClasseAvecMatieresDto();
+            dto.setClasseId(classe.getId());
+            dto.setClasseNom(classe.getNom());
+            dto.setClasseDescription(classe.getDescription());
+            dto.setMatieres(matieres);
+            return dto;
+        });
     }
 }

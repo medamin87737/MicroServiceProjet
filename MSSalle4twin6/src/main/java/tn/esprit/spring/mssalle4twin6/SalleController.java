@@ -1,18 +1,32 @@
 package tn.esprit.spring.mssalle4twin6;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import tn.esprit.spring.mssalle4twin6.dto.SalleAvecClasseDto;
+import tn.esprit.spring.mssalle4twin6.dto.SalleAvecMatieresDto;
+
 import java.util.List;
 
+@RefreshScope
 @RestController
 @RequestMapping("/salles")
 public class SalleController {
 
     private final ISalleService service;
 
+    @Value("${welcome.message}")
+    private String welcomeMessage;
+
     public SalleController(ISalleService service) {
         this.service = service;
+    }
+
+    @GetMapping("/welcome")
+    public String welcome() {
+        return welcomeMessage;
     }
 
     @GetMapping
@@ -23,6 +37,28 @@ public class SalleController {
     @GetMapping("/{id}")
     public ResponseEntity<Salle> getById(@PathVariable Long id) {
         return service.getById(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Scénario OpenFeign : salle + libellé classe récupéré sur MSClasse4twin6.
+     */
+    @GetMapping("/{id}/avec-libelle-classe")
+    public ResponseEntity<SalleAvecClasseDto> getAvecLibelleClasse(
+            @PathVariable Long id,
+            @RequestParam Long classeId) {
+        return service.getAvecLibelleClasse(id, classeId)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Scénario OpenFeign : salle + matières dédiées avec les horaires de séance.
+     */
+    @GetMapping("/{id}/matieres-dediees")
+    public ResponseEntity<SalleAvecMatieresDto> getSalleAvecMatieres(@PathVariable Long id) {
+        return service.getSalleAvecMatieres(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }

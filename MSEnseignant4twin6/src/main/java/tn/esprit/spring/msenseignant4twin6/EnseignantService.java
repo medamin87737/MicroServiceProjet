@@ -35,6 +35,11 @@ public class EnseignantService implements IEnseignantService {
         return repository.findById(id).map(existing -> {
             existing.setNom(entity.getNom());
             existing.setDescription(entity.getDescription());
+            existing.setMatricule(entity.getMatricule());
+            if (entity.getPassword() != null && !entity.getPassword().isEmpty()) {
+                existing.setPassword(entity.getPassword());
+            }
+            existing.setRole(entity.getRole() != null ? entity.getRole() : RoleEnseignant.ENSEIGNANT);
             return repository.save(existing);
         });
     }

@@ -1,18 +1,29 @@
 package tn.esprit.spring.msetudiant4twin6;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@RefreshScope
 @RestController
 @RequestMapping("/etudiants")
 public class EtudiantController {
 
     private final IEtudiantService service;
 
+    @Value("${welcome.message}")
+    private String welcomeMessage;
+
     public EtudiantController(IEtudiantService service) {
         this.service = service;
+    }
+
+    @GetMapping("/welcome")
+    public String welcome() {
+        return welcomeMessage;
     }
 
     @GetMapping

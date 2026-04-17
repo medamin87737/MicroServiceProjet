@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { NotesManagement } from '@/components/notes-management';
+import { OpenFeignDemo } from '@/components/open-feign-demo';
 
 type Entity = {
   id?: number;
@@ -20,6 +22,7 @@ const resources: ResourceConfig[] = [
   { key: 'classes', label: 'Classes', path: 'classes' },
   { key: 'matieres', label: 'Matieres', path: 'matieres' },
   { key: 'salles', label: 'Salles', path: 'salles' },
+  { key: 'notes', label: 'Notes', path: 'notes' },
 ];
 
 export default function Home() {
@@ -31,12 +34,16 @@ export default function Home() {
   const [form, setForm] = useState<Entity>({ nom: '', description: '' });
 
   const title = useMemo(() => `Gestion des ${selected.label}`, [selected.label]);
+  const isNotes = selected.key === 'notes';
+  const isMatiereFeign = selected.key === 'matieres';
+  const isSalleFeign = selected.key === 'salles';
 
   useEffect(() => {
+    if (isNotes) return;
     void loadItems();
     // Reload list whenever selected resource changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected.path]);
+  }, [selected.path, isNotes]);
 
   const loadItems = async () => {
     setLoading(true);
@@ -127,63 +134,73 @@ export default function Home() {
 
         <section className="bg-white rounded border p-4 mb-6">
           <h2 className="text-xl font-semibold mb-4">{title}</h2>
-          <form onSubmit={onSubmit} className="grid gap-3 md:grid-cols-2">
-            <input
-              className="border rounded px-3 py-2"
-              placeholder="Nom"
-              value={form.nom}
-              onChange={(e) => setForm((prev) => ({ ...prev, nom: e.target.value }))}
-              required
-            />
-            <input
-              className="border rounded px-3 py-2"
-              placeholder="Description"
-              value={form.description}
-              onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
-              required
-            />
-            <div className="md:col-span-2 flex gap-2">
-              <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded">
-                {editingId === null ? 'Ajouter' : 'Modifier'}
-              </button>
-              <button type="button" onClick={resetForm} className="bg-slate-200 px-4 py-2 rounded">
-                Annuler
-              </button>
-              <button type="button" onClick={loadItems} className="bg-blue-600 text-white px-4 py-2 rounded">
-                Rafraichir la liste
-              </button>
-            </div>
-          </form>
-          {error ? <p className="text-red-600 mt-3 text-sm">{error}</p> : null}
+          {isNotes ? (
+            <NotesManagement />
+          ) : (
+            <>
+              <form onSubmit={onSubmit} className="grid gap-3 md:grid-cols-2">
+                <input
+                  className="border rounded px-3 py-2"
+                  placeholder="Nom"
+                  value={form.nom}
+                  onChange={(e) => setForm((prev) => ({ ...prev, nom: e.target.value }))}
+                  required
+                />
+                <input
+                  className="border rounded px-3 py-2"
+                  placeholder="Description"
+                  value={form.description}
+                  onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
+                  required
+                />
+                <div className="md:col-span-2 flex gap-2">
+                  <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded">
+                    {editingId === null ? 'Ajouter' : 'Modifier'}
+                  </button>
+                  <button type="button" onClick={resetForm} className="bg-slate-200 px-4 py-2 rounded">
+                    Annuler
+                  </button>
+                  <button type="button" onClick={loadItems} className="bg-blue-600 text-white px-4 py-2 rounded">
+                    Rafraichir la liste
+                  </button>
+                </div>
+              </form>
+              {error ? <p className="text-red-600 mt-3 text-sm">{error}</p> : null}
+              {isMatiereFeign ? <OpenFeignDemo variant="matieres" /> : null}
+              {isSalleFeign ? <OpenFeignDemo variant="salles" /> : null}
+            </>
+          )}
         </section>
 
-        <section className="bg-white rounded border p-4">
-          <h3 className="font-semibold mb-3">Liste</h3>
-          {loading ? <p>Chargement...</p> : null}
-          {!loading && items.length === 0 ? (
-            <p className="text-slate-600 text-sm">Aucune donnee.</p>
-          ) : null}
-          <div className="space-y-2">
-            {items.map((item) => (
-              <div key={item.id} className="border rounded p-3 flex items-center justify-between">
-                <div>
-                  <p className="font-medium">
-                    #{item.id} - {item.nom}
-                  </p>
-                  <p className="text-sm text-slate-600">{item.description}</p>
+        {!isNotes ? (
+          <section className="bg-white rounded border p-4">
+            <h3 className="font-semibold mb-3">Liste</h3>
+            {loading ? <p>Chargement...</p> : null}
+            {!loading && items.length === 0 ? (
+              <p className="text-slate-600 text-sm">Aucune donnee.</p>
+            ) : null}
+            <div className="space-y-2">
+              {items.map((item) => (
+                <div key={item.id} className="border rounded p-3 flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">
+                      #{item.id} - {item.nom}
+                    </p>
+                    <p className="text-sm text-slate-600">{item.description}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button type="button" onClick={() => onEdit(item)} className="px-3 py-1 rounded bg-amber-500 text-white">
+                      Editer
+                    </button>
+                    <button type="button" onClick={() => onDelete(item.id)} className="px-3 py-1 rounded bg-red-600 text-white">
+                      Supprimer
+                    </button>
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <button type="button" onClick={() => onEdit(item)} className="px-3 py-1 rounded bg-amber-500 text-white">
-                    Editer
-                  </button>
-                  <button type="button" onClick={() => onDelete(item.id)} className="px-3 py-1 rounded bg-red-600 text-white">
-                    Supprimer
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
+              ))}
+            </div>
+          </section>
+        ) : null}
       </div>
     </main>
   );

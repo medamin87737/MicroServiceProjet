@@ -30,6 +30,8 @@ public class DemoApiGatewayApplication {
                         .uri("lb://MSMatiere4twin6"))
                 .route("salles_route", r -> r.path("/salles/**")
                         .uri("lb://MSSalle4twin6"))
+                .route("notes_route", r -> r.path("/notes/**")
+                        .uri("lb://MSNotes4twin6"))
         .build();
 
     }}

@@ -35,6 +35,11 @@ public class EtudiantService implements IEtudiantService {
         return repository.findById(id).map(existing -> {
             existing.setNom(entity.getNom());
             existing.setDescription(entity.getDescription());
+            existing.setMatricule(entity.getMatricule());
+            existing.setClasseId(entity.getClasseId());
+            if (entity.getPassword() != null && !entity.getPassword().isEmpty()) {
+                existing.setPassword(entity.getPassword());
+            }
             return repository.save(existing);
         });
     }
